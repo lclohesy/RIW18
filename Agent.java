@@ -32,17 +32,14 @@ public class Agent extends AbstractPlayer {
     }
 
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
-        // TODO fill this with available actions
-        System.out.println("Made it to act");
+        
+        //System.out.println("Made it to act");
 
         riwPlayer.init(stateObs);
-        System.out.println("Made it past init");
+        //System.out.println("Made it past init");
 
         Types.ACTIONS action = riwPlayer.run(elapsedTimer);
-        // TODO this can be replaced with an int and then use the actions variable to get the real action
-        // TODO ask if passing this through affects performance
         return action;
     }
-
 
 }
