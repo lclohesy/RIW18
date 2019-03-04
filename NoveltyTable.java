@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-/* Uses NovelTS feature selection */
+/**
+ * From NovelTS. Some changes made to the novelty table itself.
+ */
 public class NoveltyTable {
 
     private int height;
@@ -24,8 +26,7 @@ public class NoveltyTable {
     private int initX;
     private int initY;
 
-    // TODO how do we determine observable width? IW uses magic number 20.
-    private int observableWidth = 20;
+    private int observableWidth = 20; // Not used for RIW
 
     public NoveltyTable(StateObservation so) {
         blocksize = so.getBlockSize();
@@ -46,12 +47,11 @@ public class NoveltyTable {
         this.table.clear();
     }
 
-    // TODO: Change this to be based on Nir's logic from papers.
+    // Not used with RIW
     public double getOldNovelty(ArrayList<Atom> features) {
         int novelty = 0;
         for (Atom atom : features) {
             if (!noveltyHash.contains(atom)) {
-                // this is wrong
                 novelty += 1;
             }
         }
@@ -62,15 +62,11 @@ public class NoveltyTable {
         if (table.containsKey(feature)) {
             return table.get(feature);
         }
-        // TODO print if somehow the table isn't working properly
         return RIWPlayer.HUGE_NUMBER;
     }
 
     public void updateNovelties(ArrayList<Atom> features) {
-        noveltyHash.addAll(features); // TODO check if addAll works
-        //for (Atom atom : features) {
-           // noveltyHash.add(atom);
-        //}
+        noveltyHash.addAll(features);
     }
 
     // Returns the table value if atom exists in the table, null otherwise

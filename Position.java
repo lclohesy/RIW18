@@ -4,6 +4,9 @@ import core.game.StateObservation;
 
 import java.util.LinkedList;
 
+/**
+ * Unchanged from NovelTS
+ */
 public class Position {
 
     private int numPos;

@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 import static RIW18.NoveltyTable.extractAvatarFeature;
 
 public class RIWPlayer {
-//    private static Logger logger = Logger.getLogger(RIWPlayer.class.getName());
 
     private static Random rand;
     public static RandomAction randomAction;
@@ -34,54 +33,36 @@ public class RIWPlayer {
         this.numRun = 0;
     }
 
-    /* Init is invoked every action (from IW), will update the rootObservation and reuse the previously expanded tree */
     public void init(StateObservation gameState) {
-        // create position matrix, adds current position to it and initialise noveltyTable.
-        // game observation is stored in a new root node.
 
         if (positionMatrix == null) {
             positionMatrix = new Position(gameState);
         }
 
-
         positionMatrix.setPosition(gameState);
         rootObservation = gameState;
 
-//        // TODO check why observableWidth was used
-//        int totalDepth = 12; // PLACEHOLDER
-//        if (numRun == 0) {
-//            // TODO remove this section
-//            noveltyTable = new NoveltyTable(gameState);
-//        } else {
-//            int observableWidth = (int) (totalDepth/numRun + 3);
-//            noveltyTable = new NoveltyTable(gameState);
-//        }
         noveltyTable = new NoveltyTable(gameState);
 
-        // TODO check if this is deprecated
         noveltyTable.updateNovelties(noveltyTable.extractFeature(gameState));
 
         rootNode = new Node();
 
         rootNode.updateScore(value(gameState), distHeuristic(gameState));
-//        logger.info("init: "+ rootNode.nodeInfo());
-        System.out.println("init: "+ rootNode.nodeInfo());
+//        System.out.println("init: "+ rootNode.nodeInfo());
     }
 
-    // Generate lookahead tree. Could be done in init
+    // Generate lookahead tree
     public Types.ACTIONS run(ElapsedCpuTimer elapsedTimer) {
-        // From IW::
-        // does IW search, finds the best action and increments a run counter. Returns the action (as an int???)
 
         Node root = getBranch(elapsedTimer, rootObservation, rootNode);
-//        logger.info("found branch: "+root.nodeInfo());
-        System.out.println("found branch: "+root.nodeInfo());
+//        System.out.println("found branch: "+root.nodeInfo());
 
         this.numRun += 1;
         this.rootNode = root;
 
-        System.out.println("Next: "+rootNode);
-        System.out.println("ACTION PICKED: "+root.getAction());
+//        System.out.println("Next: "+rootNode);
+//        System.out.println("ACTION PICKED: "+root.getAction());
 
         return root.getAction();
     }
@@ -138,21 +119,19 @@ public class RIWPlayer {
 
         }
 
-        // TODO work out how to get child from direct action
-        //int ind = rootObservation.getAvailableActions().indexOf(action);
-        int ind = Agent.actions.indexOf(action);
-        if (ind < 0) {
-            System.out.println("This is what broke: "+action);
-            //System.out.println(Agent.actions);
-            System.out.println(root.nodeInfo());
-            for (Node c : root.children) {
-                System.out.println(c.nodeInfo());
-                for (Node k : c.children) {
-                    System.out.println(k.nodeInfo());
-                }
-            }
-            System.out.println(root.isSolved());
-        }
+        // For debugging purposes -> Prints children info
+//        int ind = Agent.actions.indexOf(action);
+//        if (ind < 0) {
+//            System.out.println("This is what broke: "+action);
+//            System.out.println(root.nodeInfo());
+//            for (Node c : root.children) {
+//                System.out.println(c.nodeInfo());
+//                for (Node k : c.children) {
+//                    System.out.println(k.nodeInfo());
+//                }
+//            }
+//            System.out.println(root.isSolved());
+//        }
         return root.getChild(ind);
     }
 
@@ -163,44 +142,37 @@ public class RIWPlayer {
 
         double avgTimeTaken = 0;
         double accumTimeTaken = 0;
-        long remaining = elapsedTimer.remainingTimeMillis();      // TODO DEPRECATED
+        long remaining = elapsedTimer.remainingTimeMillis();
         int numIters = 0;
         StateObservation tempState;
-        int remainingLimit = 10;  // TODO work out why this magic number exists
+        int remainingLimit = 10;  // Can be optimised when working
 
-        // Fill node
-        // fillNode(n); TODO check there isn't a purpose to this
 
         NoveltyTable d = noveltyTable;
 
         tempState = rootObservation.copy();
 
-        System.out.println("Setup for loop");
+//        System.out.println("Setup for loop");
 
         while(!n.solved && remaining > remainingLimit && remaining > 2 * avgTimeTaken) {
 
-            System.out.println("Loop #"+numIters);
+//            System.out.println("Loop #"+numIters);
 
             ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
 
-//            Node selected = selectNode(tempState, rootNode);  // This may override expand if needed
-
             // if n isn't expanded then Expand(n)
-            //System.out.println("Pre-expand");
+//            System.out.println("Pre-expand");
             expandIfNeeded(n, rootObservation); // TODO add check for if n isn't expanded first
-            //System.out.println("Expanded!");
+//            System.out.println("Expanded!");
 
 
             n.updateUnsolvedChildren();
             ArrayList<Node> children = n.getUnsolvedChildren2();
 
-            //System.out.println(children);
-
-            // TODO Not used
-            if (children.size() == 0) {
-                System.out.println("Uh oh "+n.getDepth());
-                System.out.println(n.isSolved());
-            }
+//            if (children.size() == 0) {
+//                System.out.println("no children @  "+n.getDepth());
+//                System.out.println(n.isSolved());
+//            }
 
 
             n = children.get(rand.nextInt(children.size()));
@@ -271,36 +243,28 @@ public class RIWPlayer {
 
     // function fillNode(n)
     private void fillNode(Node n) {
-        // Generate structure for the root node.
     }
 
     private void expandIfNeeded(Node n, StateObservation so) {
         if(n.getNumChildren() == 0) {
-            // C++ goes on to check frame reps.
             n.expand(so.getAvailableActions());
         }
     }
 
     private void solveAndPropagate(Node n) {
-        // I believe it marks the node as solved and propagates up to parent.
         boolean propagate = true;
         Node child = n;
         // stop when the node has unsolved children
-        // TODO check this operates correctly around null.
-        // TODO can refactor this into a recursive internal function in Node for better security
         while(propagate && child != null) {
             child.solved = true;
             if (child.parent == null) {
                 break;
             }
             child.parent.updateUnsolvedChildren();
-            //System.out.println("SNP"+n);
             if (!child.parent.getUnsolvedChildren2().isEmpty()) {
-                //System.out.println("Props");
                 for (Node c : child.parent.getUnsolvedChildren2()) {
                     if (!c.isSolved()) {
                         propagate = false;
-                        //System.out.println("PROP BROKEN");
                         break;
                     }
                 }
@@ -316,7 +280,6 @@ public class RIWPlayer {
 
     // function getNovelFeature(n,d)
     private int getNovelFeature(Node n, int[] d) {
-        // Return novelty of that node (possibly)
         return 0;
     }
 
@@ -337,26 +300,7 @@ public class RIWPlayer {
         return state.getGameScore();
     }
 
-    // TODO this function looks like it controls how IW was run, hence not useful for RIW
-//    private Node selectNode(StateObservation state, Node parent) {
-//
-//        if (state.isGameOver() || parent.isPruned()) {
-//            return parent;
-//        } else if (parent.isExpanded()) {
-//            Types.ACTIONS nextAction = parent.unprunedAction();
-//            state.advance(nextAction);
-//            parent = parent.getChild(nextAction);
-//
-//            parent.updateScore(value(state), distHeuristic(state));
-//            return selectNode(state, parent);
-//        } else {
-//            return expand(parent, state);
-//        }
-//    }
-
     private void updateNovelty(int depth, int[] featureAtoms) {
-        // TODO note that Blai returns the number of updated entries, may be useful
-
     }
 
 

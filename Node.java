@@ -5,16 +5,19 @@ import ontology.Types;
 import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * Node structure based off the TreeNodes used in NovelTS.
+ * Handles structure, scoring and expansion of nodes.
+ */
 public class Node {
 
-    // TODO work out if solved, visited and terminal are all needed
     public boolean solved;
     public boolean visited;
     public boolean terminal;
 
     private int depth;
     public Node parent;
-    public Node[] children;  // TODO make private
+    public Node[] children;
     private double novelty;
     private Types.ACTIONS action;
     private Random rand;
@@ -22,16 +25,14 @@ public class Node {
 
     private double heuristic;
     private double score;
-    public int numGameOver;  // TODO Why are these public?
-    public int numVisit;
+    public int numGameOver; // Not needed
+    public int numVisit;  // Not needed
 
     private double maxScore;
     private double minScore;
 
 
-    // TODO C++ stores num children, parent, sibling (right) and first child
     public Node() {
-        // TODO expand NodePair, add arguments
         this.solved = false;
         this.visited = false;
         this.terminal = false;
@@ -41,20 +42,18 @@ public class Node {
 
         this.children = new Node[Agent.NUM_ACTIONS];
 
-        this.novelty = 1;  // TODO check if this is correct
+        this.novelty = 1;
         this.rand = new Random();
 
-        // TODO changed this from -2999 to -1
+        // Set the maxScore to be below the losing score. This could cause issues.
         this.maxScore = -1 - RIWPlayer.HUGE_NUMBER;
     }
 
-    // TODO determine Action data type
     public Node(Node parent, Types.ACTIONS action, double novelty) {
         this.parent = parent;
         this.novelty = novelty;
         this.action = action;
 
-        // TODO check if these need to be true.
         this.solved = false;
         this.visited = false;
         this.terminal = false;
@@ -69,7 +68,7 @@ public class Node {
 
         this.rand = new Random();
 
-        // TODO changed this from -2999 to -1
+        // Set the maxScore to be below the losing score. This could cause issues.
         this.maxScore = -1 - RIWPlayer.HUGE_NUMBER;
 
     }
@@ -77,7 +76,7 @@ public class Node {
     // Returns an ArrayList of unsolved children. Children are not updated.
     public ArrayList<Node> getUnsolvedChildren() {
         ArrayList<Node> unsolved = new ArrayList<>();
-        //System.out.println("Getting puzzled kids");
+//        System.out.println("Getting puzzled kids");
         for(Node c : this.children) {
             if (c != null) {
                 if(!c.isSolved()) {
@@ -85,11 +84,11 @@ public class Node {
                 }
             }
         }
-        //System.out.println("Unsolved:"+unsolved.size());
+//        System.out.println("Unsolved:"+unsolved.size());
         if(unsolved.size() > 0) {
             return unsolved;
         }
-        //System.out.println("RETURNED NO UNSOLVED @ "+this.depth);
+//        System.out.println("RETURNED NO UNSOLVED @ "+this.depth);
         return unsolved;
     }
 
@@ -123,16 +122,13 @@ public class Node {
     }
 
     public Node getChild(int i) {
-        //System.out.println("Child @ "+i);
-        //System.out.println(this.children.length);
         return this.children[i];
     }
 
     public void expand(ArrayList<Types.ACTIONS> actions) {
-        // expand from rollout algorithm.
+        // expand from the rollout algorithm.
         int i = 0;
         for(Types.ACTIONS act : actions) {
-            // TODO calculate novelty here
             Node child = new Node(this, act, 1 + this.depth);  // TODO REWORK NOVELTY
             this.addChild(child, i);
             i++;
@@ -155,7 +151,7 @@ public class Node {
 
     public void updateScore(double score, double heuristic) {
         if (score == -RIWPlayer.HUGE_NUMBER) {
-            this.numGameOver += 1;  // TODO work out where and why this is used
+            this.numGameOver += 1;  // Relic of NovelTS, not needed for RIW
         } else {
             this.score = score;
             this.heuristic = heuristic;
@@ -174,9 +170,7 @@ public class Node {
     public Types.ACTIONS unprunedAction() {
         ArrayList<Node> kids = this.getUnsolvedChildren2();
         if (kids.size() == 0) {
-            // TODO can print error
-            System.out.println("UNPRUNED ACTION RETURNED NULL");
-
+//            System.out.println("UNPRUNED ACTION RETURNED NULL");
             return pickAction();
         } else {
             return kids.get(rand.nextInt(kids.size())).getAction();
@@ -193,7 +187,7 @@ public class Node {
         if (unpruned.size() > 0) {
             return unpruned.get(rand.nextInt(unpruned.size())).getAction();
         } else {
-            // TODO Rework how it accepts defeat
+            // TODO Rework how it accepts defeat.
             return Types.ACTIONS.ACTION_NIL;
         }
     }
@@ -218,10 +212,9 @@ public class Node {
     public Node getBestChild() {
         ArrayList<Node> best = new ArrayList<>(children.length);
         for(Node c : children) {
-            // TODO: could be c.maxScore instead of getScore.
-            System.out.println(c.nodeInfo());
+//            System.out.println(c.nodeInfo());
             if(c.getMaxScore() == this.maxScore) {
-                System.out.println("Added to best: "+c);
+//                System.out.println("Added to best: "+c);
                 best.add(c);
             }
         }

@@ -19,7 +19,7 @@ public class Agent extends AbstractPlayer {
     public Agent(StateObservation so,ElapsedCpuTimer elapsedTimer) {
 
         ArrayList<Types.ACTIONS> act = so.getAvailableActions();
-        System.out.println("Setup: "+act.size());
+//        System.out.println("Setup: "+act.size());
         NUM_ACTIONS = act.size();
 
         actions = new ArrayList<>(act.size());
@@ -28,18 +28,17 @@ public class Agent extends AbstractPlayer {
         }
 
         riwPlayer = new RIWPlayer(new Random());
-        System.out.println("Setup complete");
+//        System.out.println("Setup complete");
     }
 
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
         
-        //System.out.println("Made it to act");
+//        System.out.println("Made it to act");
 
         riwPlayer.init(stateObs);
-        //System.out.println("Made it past init");
+//        System.out.println("Made it past init");
 
         Types.ACTIONS action = riwPlayer.run(elapsedTimer);
         return action;
     }
-
 }

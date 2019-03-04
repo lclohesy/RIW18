@@ -1,5 +1,8 @@
 package RIW18;
 
+/**
+ * Atom class created for NovelTS. Minor adjustments were made to correct errors.
+ */
 public class Atom {
 
     int data1;

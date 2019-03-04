@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
+/**
+ * Unchanged from NovelTS
+ */
 public class RandomAction {
 
     private int num;
