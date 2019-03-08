@@ -12,6 +12,9 @@ import java.util.logging.Logger;
 
 import static RIW18.NoveltyTable.extractAvatarFeature;
 
+/**
+ * Algorithm for generating branches and rollouts.
+ */
 public class RIWPlayer {
 
     private static Random rand;
@@ -30,11 +33,16 @@ public class RIWPlayer {
     RIWPlayer(Random random) {
         rand = random;
         randomAction = new RandomAction(Agent.NUM_ACTIONS, 100, random);
-        this.numRun = 0;
+        this.numRun = 0;  // Not used
     }
 
+    /**
+     * Called every move, it sets the position matrix, novelty table and search tree to their initial values.
+     * @param gameState the game state at the start of a move.
+     */
     public void init(StateObservation gameState) {
 
+        // Ensure the position matrix has been initialised
         if (positionMatrix == null) {
             positionMatrix = new Position(gameState);
         }
@@ -42,17 +50,20 @@ public class RIWPlayer {
         positionMatrix.setPosition(gameState);
         rootObservation = gameState;
 
+        // Generate and update the novelty table
         noveltyTable = new NoveltyTable(gameState);
-
         noveltyTable.updateNovelties(noveltyTable.extractFeature(gameState));
 
         rootNode = new Node();
-
         rootNode.updateScore(value(gameState), distHeuristic(gameState));
 //        System.out.println("init: "+ rootNode.nodeInfo());
     }
 
-    // Generate lookahead tree
+    /**
+     * Run calls the getBranch function and updates the root node after each move.
+     * @param elapsedTimer The timer for the current move.
+     * @return The best action generated in the search tree for the next move.
+     */
     public Types.ACTIONS run(ElapsedCpuTimer elapsedTimer) {
 
         Node root = getBranch(elapsedTimer, rootObservation, rootNode);
@@ -67,6 +78,13 @@ public class RIWPlayer {
         return root.getAction();
     }
 
+    /**
+     * Calculates the search tree and handles scoring.
+     * @param elapsedTimer The timer for the current move.
+     * @param rootObservation The gamestate for the root node.
+     * @param root The root node.
+     * @return The next node from the best branch
+     */
     private Node getBranch(ElapsedCpuTimer elapsedTimer, StateObservation rootObservation, Node root) {
 
         long remaining = elapsedTimer.remainingTimeMillis();
@@ -136,8 +154,12 @@ public class RIWPlayer {
     }
 
 
-
-    // Rollout(n,d):
+    /**
+     * Handles the rollouts that create branches in the search tree.
+     * @param elapsedTimer The timer for the current move.
+     * @param rootObservation Game state for the root node.
+     * @param n Root node.
+     */
     private void rollout(ElapsedCpuTimer elapsedTimer, StateObservation rootObservation, Node n) {
 
         double avgTimeTaken = 0;
@@ -175,15 +197,16 @@ public class RIWPlayer {
 //            }
 
 
+            // Pick a random child and explore that node.
             n = children.get(rand.nextInt(children.size()));
             tempState.advance(n.getAction());
             n.updateScore(value(tempState), distHeuristic(tempState));
             n.updateMaxScore();
 
-            System.out.println("ROllout: "+n.nodeInfo());
+//            System.out.println("ROllout: "+n.nodeInfo());
 
 
-            fillNode(n);
+//            fillNode(n);  // Not used
 
             if(n.terminal) {
                 n.visited = true;
@@ -241,16 +264,25 @@ public class RIWPlayer {
         }
     }
 
-    // function fillNode(n)
+    // function fillNode(n) from rollout algorithm
     private void fillNode(Node n) {
     }
 
+    /**
+     * Expand the node if no children have been already expanded.
+     * @param n The node.
+     * @param so The game state observation.
+     */
     private void expandIfNeeded(Node n, StateObservation so) {
         if(n.getNumChildren() == 0) {
             n.expand(so.getAvailableActions());
         }
     }
 
+    /**
+     * Labels the node as solved and then
+     * @param n
+     */
     private void solveAndPropagate(Node n) {
         boolean propagate = true;
         Node child = n;
